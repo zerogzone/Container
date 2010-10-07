@@ -240,11 +240,11 @@ package com.codedrunks.facebook
 		@ usage <code>className.publishToWall(message:String, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null)</code>
 		@ return void
 		*/
-		public function publishToWall(message:String, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null):void
+		public function publishToWall(message:String, userId:String=null, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null):void
 		{
 			currentRequest = PUBLISH_TO_WALL;
-			/* *
-			var url:String = apiSecuredPath+userId+"/feed";
+			var uid:String = (userId)? userId : this.userId;
+			var url:String = apiSecuredPath+uid+"/feed";
 			var request:URLRequest = new URLRequest(url);
 			var requestVars:URLVariables = new URLVariables();
 			requestVars.access_token = accessToken;
@@ -260,8 +260,8 @@ package com.codedrunks.facebook
 			loader.load(request);
 			
 			trace("debug --> publishing to wall", this);
-			/* */
 			
+			/* *
 			var media:Object = {};
 			media.type = "flash";
 			media.swfsrc = source;
@@ -288,6 +288,7 @@ package com.codedrunks.facebook
 			request.data = data;
 			request.method = URLRequestMethod.POST;
 			loader.load(request);
+			/* */
 		}
 		
 	}

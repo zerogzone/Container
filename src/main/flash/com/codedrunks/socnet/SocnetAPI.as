@@ -156,9 +156,9 @@ package com.codedrunks.socnet
 		 @ usage <code>className.publishToFeed(message:String, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null)</code>
 		 @ return void
 		 */
-		public function publishToFeed(message:String, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null):void
+		public function publishToFeed(message:String, userId:String=null, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null):void
 		{
-			facebookAPI.publishToWall(message, picture, link, name, caption, description, source);
+			facebookAPI.publishToWall(message, userId, picture, link, name, caption, description, source);
 		}
 	}
 }
