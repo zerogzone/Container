@@ -7,6 +7,7 @@ package
 	import com.codedrunks.socnet.SocnetAPI;
 	import com.codedrunks.socnet.events.SocnetAPIEvent;
 	import com.codedrunks.socnet.events.SocnetUserInfoEvent;
+	//import com.codedrunks.util.FootprintsUtil;
 	
 	import flash.display.Loader;
 	import flash.display.MovieClip;
@@ -32,6 +33,8 @@ package
 		
 		private var socnetAPI:SocnetAPI;
 		private var profilePicLoader:Loader;
+		
+		//private var footprintsUrl:FootprintsUtil;
 		
 		public function Template()
 		{

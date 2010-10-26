@@ -243,6 +243,7 @@ package com.codedrunks.facebook
 		public function publishToWall(message:String, userId:String=null, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null):void
 		{
 			currentRequest = PUBLISH_TO_WALL;
+			/* *
 			var uid:String = (userId)? userId : this.userId;
 			var url:String = apiSecuredPath+uid+"/feed";
 			var request:URLRequest = new URLRequest(url);
@@ -258,10 +259,11 @@ package com.codedrunks.facebook
 			request.data = requestVars;
 			request.method = URLRequestMethod.POST;
 			loader.load(request);
+			/* */
 			
 			trace("debug --> publishing to wall", this);
 			
-			/* *
+			/* */
 			var media:Object = {};
 			media.type = "flash";
 			media.swfsrc = source;

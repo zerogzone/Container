@@ -13,21 +13,33 @@ package
 	import flash.events.TimerEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	import flash.system.ApplicationDomain;
+	import flash.system.LoaderContext;
 	import flash.utils.Timer;
 	
 	public class Container extends Sprite
 	{
 		private var preloader:MovieClip;
 		private var app:MovieClip;
+		private var baseUrl:String;
+		private var userId:String;
+		private var params:Object;
 		
 		public function Container()
 		{
 			var parameters:Object = this.loaderInfo.parameters;
+			params = parameters;
 			trace("debug --> INIT CONTAINER", this.loaderInfo.parameters);
 			for (var i:String in parameters)
 			{
 				trace("debug --> flashvars - i :: ", i, ", parameters[i] :: ", parameters[i]);
 			}
+			
+			var currentUrl:String = loaderInfo.url;
+			var dirRe:RegExp = /^(.*\/)(.*\.swf)/;
+			var result:Object = dirRe.exec(currentUrl);
+			baseUrl = result[1];
+			userId = parameters.userId; 
 			/* *
 			var signedRequest:String = parameters.signed_request as String;
 			var authToken:String = parseSignedRequest(signedRequest);
@@ -65,7 +77,7 @@ package
 		*/
 		private function loadPreloader():void
 		{
-			var url:String = "assets/preloader/ContainerPreloader.swf";
+			var url:String = baseUrl+"assets/preloader/ContainerPreloader.swf";
 			var loader:Loader = new Loader();
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, handlePreloaderLoadComplete);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, handlePreloaderLoadIOError);
@@ -93,22 +105,99 @@ package
 			
 			this.addChild(preloader);
 			
-			loadApp();
+			loadConfig();
 		}
 		
 		/**
-		@ handle preloader Load IO Error	
-				 	 
-		@ method dispose (private)
-		@ params event:IOErrorEvent.
-		@ usage <code>usage</code>
-		@ return void
-		*/
+		 @ handle preloader Load IO Error	
+		 
+		 @ method dispose (private)
+		 @ params event:IOErrorEvent.
+		 @ usage <code>usage</code>
+		 @ return void
+		 */
 		private function handlePreloaderLoadIOError(event:IOErrorEvent):void
 		{
 			event.target.removeEventListener(Event.COMPLETE, handlePreloaderLoadComplete);
 			event.target.removeEventListener(IOErrorEvent.IO_ERROR, handlePreloaderLoadIOError);
 			trace("Error --> PRELOADER LOAD FAILED");
+		}
+		
+		
+		/**
+		@ loads the getConfig xml	
+				 	 
+		@ method dispose (private)
+		@ params .
+		@ usage <code>usage</code>
+		@ return void
+		*/
+		private function loadConfig():void
+		{
+			var url:String = baseUrl+"getConfig.jsp?userId="+userId;
+			var urlLoader:URLLoader = new URLLoader();
+			urlLoader.addEventListener(Event.COMPLETE, handleConfigLoadComplete);
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleConfigLoadIOError);
+			urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleConfigLoadSecurityError);
+			urlLoader.load(new URLRequest(url));
+		}
+		
+		/**
+		 @ handles the load IO error event	
+		 
+		 @ method dispose (private)
+		 @ params event:IOErrorEvent.
+		 @ usage <code></code>
+		 @ return void
+		 */			
+		private function handleConfigLoadIOError(event:IOErrorEvent):void
+		{
+			trace("Error --> Failed loading 'getConfig.jsp' due to IO Error.");
+		}
+		
+		/**
+		 @ handles the load security error	event
+		 
+		 @ method dispose (private)
+		 @ params event:SecurityErrorEvent.
+		 @ usage <code></code>
+		 @ return void
+		 */			
+		private function handleConfigLoadSecurityError(event:SecurityErrorEvent):void
+		{
+			trace("Error --> Failed loading 'getConfig.jsp' due to security reasons.");
+		}
+		
+		
+		/**
+		@ handles the load complete of the url	
+				 	 
+		@ method dispose (private)
+		@ params event:Event.
+		@ usage <code></code>
+		@ return void
+		*/			
+		private function handleConfigLoadComplete(event:Event):void
+		{
+			var data:String = event.target.data;
+			var dataXml:XML = new XML(data);
+			
+			var flashvarsNode:XMLList = dataXml.children();
+			var nodeName:String;
+			var nodeValue:String;
+			var child:XML;
+			var n:int = flashvarsNode.length();
+			
+			for (var i:int = 0; i < n; i++) {
+				child = flashvarsNode[i];
+				nodeName = child.name().toString();
+				nodeValue = child.text();
+				
+				params[nodeName] = nodeValue;
+			}
+			
+			var appUrl:String = params.appUrl;
+			loadApp(appUrl);
 		}
 		
 		/**
@@ -119,14 +208,13 @@ package
 		@ usage <code>usage</code>
 		@ return void
 		*/
-		private function loadApp():void
+		private function loadApp(url:String):void
 		{
-			var url:String = "Template.swf";
 			var loader:Loader = new Loader();
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleAppLoadComplete);
 			loader.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS, handleAppLoadProgress);
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, handleAppLoadIOError);
-			loader.load(new URLRequest(url));
+			loader.load(new URLRequest(url), new LoaderContext(true, ApplicationDomain.currentDomain));
 		}
 		
 		/**
@@ -162,7 +250,7 @@ package
 			
 			if(app.setFlashvars)
 			{
-				app.setFlashvars(this.loaderInfo.parameters);
+				app.setFlashvars(params);
 			}
 			
 			trace("debug --> APP LOAD COMPLETE", app);
