@@ -4,6 +4,7 @@ package com.codedrunks.socnet
 	import com.codedrunks.facebook.events.FacebookGraphAPIEvent;
 	import com.codedrunks.socnet.events.SocnetAPIEvent;
 	import com.codedrunks.socnet.events.SocnetUserInfoEvent;
+	import com.codedrunks.socnet.events.SocnetUserLikesEvent;
 	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -146,6 +147,9 @@ package com.codedrunks.socnet
 		{
 			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_INFO_SUCCESS, handleUserInfoSuccess);
 			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_INFO_FAIL, handleUserInfoFail);
+			
+			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_LIKES_APP, handleUserLikesApp);
+			facebookAPI.removeEventListener(FacebookGraphAPIEvent.USER_LIKES_APP_FAIL, handleUserLikesAppFail);
 		}
 		
 		/**
@@ -159,6 +163,53 @@ package com.codedrunks.socnet
 		public function publishToFeed(message:String, userId:String=null, picture:String=null, link:String=null, name:String=null, caption:String=null, description:String=null, source:String=null):void
 		{
 			facebookAPI.publishToWall(message, userId, picture, link, name, caption, description, source);
+		}
+		
+		/**
+		@ checks if the user likes a particular application	
+				 	 
+		@ method dispose (public)
+		@ params appId:String.
+		@ usage <code>socnetApi.checkUserLikesApp(appId:String)</code>
+		@ return void
+		*/
+		public function checkUserLikesApp(appId:String):void
+		{
+			facebookAPI.addEventListener(FacebookGraphAPIEvent.USER_LIKES_APP, handleUserLikesApp);
+			facebookAPI.addEventListener(FacebookGraphAPIEvent.USER_LIKES_APP_FAIL, handleUserLikesAppFail);
+			facebookAPI.checkUserLikesApp(appId);
+		}
+		
+		/**
+		@ handles the user likes app event	
+				 	 
+		@ method dispose (private)
+		@ params event:FacebookGraphAPIEvent.
+		@ usage <code>usage</code>
+		@ return void
+		*/
+		private function handleUserLikesApp(event:FacebookGraphAPIEvent):void
+		{
+			disposeFacebookEvents();
+			
+			var e:SocnetUserLikesEvent = new SocnetUserLikesEvent(SocnetUserLikesEvent.USER_LIKES_APP);
+			dispatchEvent(e);
+		}
+		
+		/**
+		 @ handles the user likes app fail event	
+		 
+		 @ method dispose (private)
+		 @ params event:FacebookGraphAPIEvent.
+		 @ usage <code>usage</code>
+		 @ return void
+		 */
+		private function handleUserLikesAppFail(event:FacebookGraphAPIEvent):void
+		{
+			disposeFacebookEvents();
+			
+			var e:SocnetUserLikesEvent = new SocnetUserLikesEvent(SocnetUserLikesEvent.USER_DISLIKES_APP);
+			dispatchEvent(e);
 		}
 	}
 }

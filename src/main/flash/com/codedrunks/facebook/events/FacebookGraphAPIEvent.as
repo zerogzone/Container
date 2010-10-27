@@ -13,6 +13,9 @@ package com.codedrunks.facebook.events
 		public static const USER_INFO_SUCCESS:String = "userInfoSuccess";
 		public static const USER_INFO_FAIL:String = "userInfoFail";
 		
+		public static const USER_LIKES_APP:String = "userLikesApp";
+		public static const USER_LIKES_APP_FAIL:String = "userLikesAppFail";
+		
 		public var userName:String;
 		public var userPic:String;
 		public var userId:String;

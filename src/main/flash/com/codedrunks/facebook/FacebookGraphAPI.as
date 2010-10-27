@@ -22,6 +22,7 @@ package com.codedrunks.facebook
 		public static const USER_INFO:String = "userInfo";
 		public static const USER_PICTURE:String = "userPicture";
 		public static const PUBLISH_TO_WALL:String = "publishToWall";
+		public static const USER_LIKES_APP:String = "userLikesApp";
 		
 		public var apiSecuredPath:String = "https://graph.facebook.com/";
 		public var apiUnsecuredPath:String = "http://graph.facebook.com/";
@@ -40,6 +41,8 @@ package com.codedrunks.facebook
 		private var secretKey:String;
 		private var scope:String;
 		private var redirectURI:String;
+		
+		private var tempAppId:String;
 		
 		public function FacebookGraphAPI()
 		{
@@ -147,6 +150,9 @@ package com.codedrunks.facebook
 					trace("Error --> PUBLISH TO WALL FAILED", this);
 					break;
 				
+				case USER_LIKES_APP:
+					e = new FacebookGraphAPIEvent(FacebookGraphAPIEvent.USER_LIKES_APP_FAIL);					
+					break;
 			}
 			if(e)
 			{
@@ -184,11 +190,39 @@ package com.codedrunks.facebook
 				case PUBLISH_TO_WALL:
 					trace("debug --> PUBLISH TO WALL COMPLETE", this);
 					break;
+				
+				case USER_LIKES_APP:
+					e = checkIfUserLikesTheApp(event);					
+					break;
 			}
 			if(e)
 			{
 				dispatchEvent(e);
 			}
+		}
+		
+		/**
+		@ checks if the user likes the application	
+				 	 
+		@ method dispose (private)
+		@ params .
+		@ usage <code>usage</code>
+		@ return void
+		*/
+		private function checkIfUserLikesTheApp(event:Event):FacebookGraphAPIEvent
+		{
+			var res:String = event.target.data;
+			var resObj:Object = JSON.decode(res);
+			var likesList:Array = resObj.data as Array;
+			for (var i:int = 0; i < likesList.length; i++)
+			{
+				var element:Object = likesList[i] as Object;
+				if(element.id == tempAppId)
+				{
+					return new FacebookGraphAPIEvent(FacebookGraphAPIEvent.USER_LIKES_APP);
+				}
+			}
+			return new FacebookGraphAPIEvent(FacebookGraphAPIEvent.USER_LIKES_APP_FAIL);
 		}
 		
 		/**
@@ -291,6 +325,24 @@ package com.codedrunks.facebook
 			request.method = URLRequestMethod.POST;
 			loader.load(request);
 			/* */
+		}
+		
+		/**
+		@ checks if the user likes an application	
+				 	 
+		@ method dispose (public)
+		@ params appId:String.
+		@ usage <code>api.checkUserLikesApp(appId:String)</code>
+		@ return void
+		*/
+		public function checkUserLikesApp(appId:String):void
+		{
+			currentRequest = USER_LIKES_APP;
+			tempAppId = appId;
+			
+			var url:String = apiSecuredPath+userId+"/likes?access_token="+accessToken;
+			var request:URLRequest = new URLRequest(url);
+			loader.load(request);
 		}
 		
 	}

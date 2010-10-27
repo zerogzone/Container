@@ -1,19 +1,22 @@
 package
 {
 	import com.adobe.serialization.json.JSON;
+	import com.adobe.utils.StringUtil;
 	import com.codedrunks.components.flash.Image;
+	import com.codedrunks.components.flash.Share;
+	import com.codedrunks.components.flash.Twitter;
 	import com.codedrunks.facebook.FacebookGraphAPI;
 	import com.codedrunks.facebook.events.FacebookGraphAPIEvent;
 	import com.codedrunks.socnet.SocnetAPI;
 	import com.codedrunks.socnet.events.SocnetAPIEvent;
 	import com.codedrunks.socnet.events.SocnetUserInfoEvent;
-	//import com.codedrunks.util.FootprintsUtil;
 	
 	import flash.display.Loader;
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.MouseEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -34,6 +37,13 @@ package
 		private var socnetAPI:SocnetAPI;
 		private var profilePicLoader:Loader;
 		
+		private var twitter:Twitter;
+		private var share:Share;
+		private var embedCode:String;
+		private var wildfireUIConfig:String;
+		
+		private var memberId:String;
+		
 		//private var footprintsUrl:FootprintsUtil;
 		
 		public function Template()
@@ -49,12 +59,96 @@ package
 		
 		private function init():void
 		{
+			loadConfig();
+				
+			addToFacebookBtn.addEventListener(MouseEvent.CLICK, handleAddToFacebookBtnClick);
+			shareBtn.addEventListener(MouseEvent.CLICK, handleShareBtnClick);
+			twitterBtn.addEventListener(MouseEvent.CLICK, handleTwitterBtnClick);
+		}
+		
+		/**
+		@ loads the config xml	
+				 	 
+		@ method dispose (private)
+		@ params .
+		@ usage <code></code>
+		@ return void
+		*/
+		private function loadConfig():void
+		{
+			var urlLoader:URLLoader = new URLLoader();
+			urlLoader.addEventListener(Event.COMPLETE, handleConfigLoadComplete);
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleConfigLoadIOError);
+			urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleConfigLoadSecurityError);
+			urlLoader.load(new URLRequest(flashvars.configUrl));
+		}
+		
+		/**
+		@ handles the load IO error event	
+				 	 
+		@ method dispose (private)
+		@ params event:IOErrorEvent.
+		@ usage <code></code>
+		@ return void
+		*/			
+		private function handleConfigLoadIOError(event:IOErrorEvent):void
+		{
+			trace("Error --> Failed loading 'url' due to IO Error.");
+		}
+		
+		/**
+		@ handles the load security error	event
+				 	 
+		@ method dispose (private)
+		@ params event:SecurityErrorEvent.
+		@ usage <code></code>
+		@ return void
+		*/			
+		private function handleConfigLoadSecurityError(event:SecurityErrorEvent):void
+		{
+			trace("Error --> Failed loading 'url' due to security reasons.");
+		}
+		
+		/**
+		@ handles the load complete event	
+				 	 
+		@ method dispose (private)
+		@ params event:Event.
+		@ usage <code></code>
+		@ return void
+		*/			
+		private function handleConfigLoadComplete(event:Event):void
+		{
+			var xml:XML = XML(event.target.data);
+			
+			embedCode = xml.embedCode;
+			wildfireUIConfig = xml.wildfireConfig;
+			
+			var tokens:XMLList = xml..token;
+			for each (var token:XML in tokens) {
+				var tokenValue:String = flashvars[token.@name];
+				
+				if (tokenValue == null) {
+					tokenValue = token.@value;
+				}
+				/* *
+				if (!httpRe.test(tokenValue as String) && urlTokens[token.@name] == true) {
+					tokenValue = baseUrl + tokenValue;	
+				}
+				/* */
+				
+				flashvars[token.@name] = tokenValue;
+			}
+			
+			initSocnet();
+		}
+		
+		private function initSocnet():void
+		{
 			socnetAPI = SocnetAPI.getInstance();
 			socnetAPI.addEventListener(SocnetAPIEvent.INITIALIZED, handleSocnetInitialize);
 			socnetAPI.addEventListener(SocnetAPIEvent.INITIALIZE_FAILED, handleSocnetInitializeFail);
 			socnetAPI.initialize(flashvars, applicationID, secretKey, scope, redirectURI);
-			
-			addToFacebookBtn.addEventListener(MouseEvent.CLICK, handleAddToFacebookBtnClick);
 		}
 		
 		private function handleSocnetInitializeFail(event:SocnetAPIEvent):void
@@ -103,5 +197,47 @@ package
 		{
 			socnetAPI.publishToFeed("This is a test message", null, "http://dev.collectivezen.com/fbtestbed/fb/manu/containerTest/assets/images/cover.png", "http://dev.collectivezen.com/fbtestbed/fb/manu/containerTest/index.html", "Container Test", "FB Container and Template", "This is to test the FB Container and the Template application", "http://dev.collectivezen.com/fbtestbed/fb/manu/containerTest/Container.swf");
 		}
+		
+		private function handleShareBtnClick(event:MouseEvent):void
+		{
+			if(!share)
+			{
+				embedCode = StringUtil.replace(embedCode, "|userId|", memberId);
+				share = new Share();
+				share.addEventListener(Share.CLOSE_EVENT, handleShareClose);
+				share.configure(embedCode, wildfireUIConfig, 400, 400);
+				share.x = 0;
+				share.y = 0;
+			
+				this.addChild(share);
+			}
+			share.visible = true;
+		}
+		
+		private function handleShareClose(event:Event):void
+		{
+			share.visible = false;
+		}
+		
+		private function handleTwitterBtnClick(event:MouseEvent):void
+		{
+			if(!twitter)
+			{
+				var tweetrProxy:String = flashvars.twitterProxy;
+				var tweetrUserName:String = flashvars.twitterUserName;
+				
+				twitter = new Twitter();
+				twitter.addEventListener(Twitter.CLOSE_EVENT, handleTwitterClose);
+				twitter.configure(tweetrUserName, tweetrProxy);
+				this.addChild(twitter);
+			}
+			twitter.visible = true;
+		}
+		
+		private function handleTwitterClose(event:Event):void
+		{
+			twitter.visible = false;			
+		}
+		
 	}
 }
