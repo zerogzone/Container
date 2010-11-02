@@ -345,5 +345,18 @@ package com.codedrunks.facebook
 			loader.load(request);
 		}
 		
+		/**
+		@ returns the user id	
+				 	 
+		@ method dispose (public)
+		@ params .
+		@ usage <code>api.getUserId()</code>
+		@ return String
+		*/
+		public function getUserId():String
+		{
+			return userId;
+		}
+		
 	}
 }
