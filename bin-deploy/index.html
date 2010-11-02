@@ -31,55 +31,7 @@
 				params,
 				attributes);
     </script>
-    <script type="text/javascript">
-        //<![CDATA[
-        function getRequestParameter(name)
-        {
-            name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-            var results = regex.exec(window.location.href);
-            return results == null ? "" : results[1];
-        }
-
-        function allRequestParameters()
-        {
-            var data = {};
-            var strHref = window.location.href;
-            if ( strHref.indexOf("?") > -1 ) {
-                var strQueryString = strHref.substr(strHref.indexOf("?")+1);
-                var aQueryString = strQueryString.split("&");
-                for ( var iParam = 0; iParam < aQueryString.length; iParam++ ) {
-                    var aParam = aQueryString[iParam].split("=");
-                    data[aParam[0]] = aParam[1];
-                }
-            }
-            return data;
-        }
-
-        function generateFlash()
-        {
-            var flashvars = allRequestParameters();
-            var params = {
-                allowScriptAccess: "sameDomain"
-            };
- 
-            var attributes = {
-                id: "FacebookOAuthGraphTest",
-                name: "FacebookOAuthGraphTest"
-            };
-            swfobject.embedSWF("FacebookOAuthGraphTest.swf?v=2", "alternative", "100%", "100%", "10.0.0",
-                "expressInstall.swf", flashvars, params, attributes);
-        }
-        if(!getRequestParameter("session")){
-            window.top.location = "https://graph.facebook.com/oauth/authorize"
-                + "?client_id=" + '268718683475'
-                + "&redirect_uri=" + 'http://apps.facebook.com/blogoauthgraph/'
-                + "&scope=publish_stream,user_photos,user_photo_video_tags"
-        }else{
-            generateFlash();
-        }
-        //]]>
-    </script>
+   
 	<style type="text/css" media="screen">
 	  html, body, #containerA, #containerB { height:100%; }
 	  body { margin:0; padding:0; overflow:hidden; }
